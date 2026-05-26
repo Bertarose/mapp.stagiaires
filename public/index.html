@@ -1,1 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAPP MTL 2026 — Disponibilités stagiaires</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg: #0a0a0a;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #fff;
+      --text2: rgba(255,255,255,0.45);
+      --text3: rgba(255,255,255,0.35);
+      --text4: rgba(255,255,255,0.18);
+      --yellow: #fbbf24;
+      --green: #4ade80;
+      --red: #f87171;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 28px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+    .header-tag { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
+    .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+    .header-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+    .btn-refresh {
+      padding: 8px 18px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer;
+      font-weight: 600; font-family: inherit; transition: border-color 0.2s;
+    }
+    .btn-refresh:hover { border-color: rgba(255,255,255,0.25); }
+
+    /* Stats */
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 24px; flex: 1 1 140px; min-width: 140px;
+    }
+    .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+    .stat-value { font-size: 34px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+    .stat-sub { font-size: 12px; color: var(--text3); margin-top: 6px; }
+
+    /* Pending banner */
+    .pending-banner {
+      background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.15);
+      border-radius: 12px; padding: 14px 20px; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--yellow); font-weight: 500;
+    }
+    .pending-banner.hidden { display: none; }
+
+    /* Day breakdown */
+    .day-bar {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 22px; margin-bottom: 24px;
+    }
+    .day-bar .section-label { margin-bottom: 14px; }
+    .day-row { display: flex; gap: 14px; }
+    .day-col { flex: 1; text-align: center; }
+    .day-count { font-size: 20px; font-weight: 700; }
+    .day-track { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden; margin: 6px 0; }
+    .day-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+    .day-name { font-size: 11px; color: var(--text2); font-weight: 600; }
+
+    /* Section labels */
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); margin-bottom: 14px; }
+
+    /* Grid */
+    .grid-interns { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-bottom: 36px; }
+    .grid-meetings { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 28px; }
+
+    /* Intern card */
+    .intern-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.2s, transform 0.2s; cursor: default;
+    }
+    .intern-card:hover { transform: translateY(-2px); }
+    .intern-card.pending { opacity: 0.7; }
+    .intern-top { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.02em; flex-shrink: 0;
+    }
+    .intern-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .intern-email { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .intern-hours { font-size: 12px; color: var(--text2); }
+    .hour-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.06); overflow: hidden; }
+    .hour-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+    .day-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .day-tag {
+      font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 5px;
+    }
+    .day-tag.active { }
+    .day-tag.inactive { background: rgba(255,255,255,0.04); color: var(--text4); border: 1px solid rgba(255,255,255,0.06); }
+    .pending-badge {
+      font-size: 11px; color: var(--yellow); background: rgba(251,191,36,0.08);
+      border-radius: 6px; padding: 6px 10px; text-align: center; font-weight: 500;
+    }
+
+    /* Meeting card */
+    .meeting-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .meeting-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .meeting-date { font-weight: 600; font-size: 14px; }
+    .meeting-time { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .meeting-count {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .meeting-avatars { display: flex; gap: 5px; flex-wrap: wrap; }
+    .mini-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700;
+    }
+    .empty-slot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.1); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 18px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+    .footer a { color: var(--text3); font-size: 12px; text-decoration: none; }
+    .footer a:hover { color: var(--text2); }
+
+    /* Loading */
+    .loading-wrap { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+    .spinner {
+      width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--green); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--text2); font-size: 14px; text-align: center; }
+
+    .error-wrap { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+    .error-box { text-align: center; max-width: 400px; padding: 32px; }
+    .error-icon { font-size: 48px; margin-bottom: 16px; }
+    .error-title { color: var(--red); font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .error-msg { color: var(--text2); font-size: 13px; line-height: 1.6; }
+    .btn-retry {
+      margin-top: 20px; padding: 10px 24px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+      font-size: 13px; cursor: pointer; font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <div class="loading-wrap" id="loading">
+    <div>
+      <div class="spinner"></div>
+      <div class="loading-text">Chargement depuis Notion…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = [
+  "#4ade80","#f472b6","#60a5fa","#fbbf24","#a78bfa",
+  "#fb923c","#34d399","#f87171","#38bdf8","#c084fc",
+  "#facc15","#2dd4bf","#e879f9","#6ee7b7"
+];
+const DAYS = ["lundi","mardi","mercredi","jeudi","vendredi"];
+const DAY_SHORT = {lundi:"Lun",mardi:"Mar",mercredi:"Mer",jeudi:"Jeu",vendredi:"Ven"};
+const MEETINGS = [
+  {date:"Lundi 2 juin",time:"9h–11h",day:"lundi"},
+  {date:"Mercredi 4 juin",time:"14h–16h",day:"mercredi"},
+  {date:"Mardi 10 juin",time:"9h–11h",day:"mardi"},
+  {date:"Jeudi 12 juin",time:"13h–15h",day:"jeudi"},
+  {date:"Lundi 16 juin",time:"10h–12h",day:"lundi"},
+  {date:"Vendredi 20 juin",time:"14h–16h",day:"vendredi"},
+];
+
+const initials = n => n.split(" ").map(w=>w[0]).join("").toUpperCase();
+const col = i => COLORS[i % COLORS.length];
+
+async function fetchInterns() {
+  const r = await fetch("/api/interns");
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function render(interns) {
+  const app = document.getElementById("app");
+  const withData = interns.filter(i => i.heures != null);
+  const pending = interns.filter(i => i.heures == null);
+  const totalH = withData.reduce((s,i) => s + (i.heures||0), 0);
+  const avgH = withData.length ? Math.round(totalH / withData.length) : 0;
+  const fullTime = withData.filter(i => DAYS.every(d => i[d]) && i.heures >= 28).length;
+  const dayData = DAYS.map(d => ({d, count: withData.filter(i => i[d]).length}));
+
+  let html = `
+    <div class="header">
+      <div>
+        <div class="header-tag">MAPP MTL 2026</div>
+        <h1>Disponibilités stagiaires</h1>
+        <div class="header-sub">Données en direct · Notion</div>
+      </div>
+      <button class="btn-refresh" onclick="load()">↻ Rafraîchir</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Stagiaires</div>
+        <div class="stat-value">${interns.length}</div>
+        <div class="stat-sub">${withData.length} confirmés</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Heures totales</div>
+        <div class="stat-value">${totalH}</div>
+        <div class="stat-sub">par semaine</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Moyenne</div>
+        <div class="stat-value">${withData.length ? avgH+'h' : '—'}</div>
+        <div class="stat-sub">par stagiaire</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Temps plein</div>
+        <div class="stat-value">${fullTime}</div>
+        <div class="stat-sub">5 jours/sem</div>
+      </div>
+    </div>
+
+    <div class="pending-banner ${pending.length === 0 ? 'hidden' : ''}">
+      <span style="font-size:18px">⏳</span>
+      <span>${pending.length} stagiaire${pending.length>1?'s':''} n'${pending.length>1?"ont":"a"} pas encore rempli ${pending.length>1?"leurs":"ses"} disponibilités</span>
+    </div>`;
+
+  // Day breakdown
+  if (withData.length) {
+    html += `<div class="day-bar"><div class="section-label">Disponibilité par jour</div><div class="day-row">`;
+    dayData.forEach(({d, count}) => {
+      const pct = withData.length ? (count/withData.length)*100 : 0;
+      const hue = withData.length ? (count/withData.length)*120 : 0;
+      html += `<div class="day-col">
+        <div class="day-count">${count}</div>
+        <div class="day-track"><div class="day-fill" style="width:${pct}%;background:hsl(${hue},70%,55%)"></div></div>
+        <div class="day-name">${DAY_SHORT[d]}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Intern cards
+  html += `<div class="section-label">Stagiaires</div><div class="grid-interns">`;
+  interns.forEach((intern, i) => {
+    const c = col(i);
+    const hasData = intern.heures != null;
+    const barPct = hasData ? Math.min((intern.heures/35)*100, 100) : 0;
+    html += `<div class="intern-card ${!hasData?'pending':''}" style="--c:${c}" onmouseenter="this.style.borderColor='${c}40'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.08)'">
+      <div class="intern-top">
+        <div class="avatar" style="background:${c}22;border:2px solid ${c};color:${c}">${initials(intern.nom)}</div>
+        <div style="min-width:0">
+          <div class="intern-name">${intern.nom}</div>
+          <div class="intern-email">${intern.courriel}</div>
+        </div>
+      </div>`;
+    if (hasData) {
+      html += `<div class="intern-hours">${intern.heures}h / semaine</div>
+        <div class="hour-track"><div class="hour-fill" style="width:${barPct}%;background:${c}"></div></div>
+        <div class="day-tags">`;
+      DAYS.forEach(d => {
+        const on = intern[d];
+        html += on
+          ? `<span class="day-tag active" style="background:${c}20;color:${c};border:1px solid ${c}30">${DAY_SHORT[d]}</span>`
+          : `<span class="day-tag inactive">${DAY_SHORT[d]}</span>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="pending-badge">⏳ En attente de disponibilités</div>`;
+    }
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // Meetings
+  html += `<div class="section-label">Rencontres physiques proposées</div><div class="grid-meetings">`;
+  MEETINGS.forEach(m => {
+    const avail = interns.filter(i => i[m.day] && i.heures != null);
+    const total = interns.length;
+    const cnt = avail.length;
+    const ratio = total > 0 ? cnt/total : 0;
+    const rc = ratio >= 0.6 ? "#4ade80" : ratio >= 0.4 ? "#fbbf24" : "#f87171";
+    html += `<div class="meeting-card">
+      <div class="meeting-top">
+        <div><div class="meeting-date">${m.date}</div><div class="meeting-time">${m.time}</div></div>
+        <div class="meeting-count" style="background:${rc}20;border:2px solid ${rc};color:${rc}">${cnt}/${total}</div>
+      </div>
+      <div class="meeting-avatars">`;
+    avail.forEach(intern => {
+      const idx = interns.indexOf(intern);
+      const c = col(idx);
+      html += `<div class="mini-avatar" title="${intern.nom}" style="background:${c}22;border:1.5px solid ${c};color:${c}">${initials(intern.nom)}</div>`;
+    });
+    for (let i = 0; i < total - cnt; i++) html += `<div class="empty-slot"></div>`;
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="footer"><a href="https://www.notion.so/9c5a75e986e94d46b8b67ae590940c7f" target="_blank">Ouvrir la base Notion ↗</a></div>`;
+
+  app.innerHTML = html;
+}
+
+function showError(msg) {
+  document.getElementById("app").innerHTML = `
+    <div class="error-wrap"><div class="error-box">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">Erreur de connexion</div>
+      <div class="error-msg">${msg}</div>
+      <button class="btn-retry" onclick="load()">Réessayer</button>
+    </div></div>`;
+}
+
+async function load() {
+  document.getElementById("app").innerHTML = `<div class="loading-wrap"><div><div class="spinner"></div><div class="loading-text">Chargement depuis Notion…</div></div></div>`;
+  try {
+    const data = await fetchInterns();
+    render(data);
+  } catch (e) {
+    showError(e.message);
+  }
+}
+
+load();
+</script>
+</body>
+</html>
